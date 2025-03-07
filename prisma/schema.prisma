@@ -1,0 +1,251 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  password      String
+  image         String?
+  phone         String?
+  role          UserRole        @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  properties    Property[]      @relation("UserProperties")
+  favorites     Property[]      @relation("UserFavorites")
+  inquiries     Inquiry[]
+  searchHistory SearchHistory[]
+  agent         Agent?
+}
+
+model Agent {
+  id          String        @id @default(cuid())
+  userId      String        @unique
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  title       String
+  specialties String[]
+  licenseId   String?
+  yearsActive Int           @default(0)
+  properties  Property[]
+  ratings     AgentRating[]
+  reviews     AgentReview[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model AgentRating {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  rating    Int      @default(5) // 1-5 rating
+  createdAt DateTime @default(now())
+  userId    String?
+}
+
+model AgentReview {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId    String?
+  name      String
+  content   String   @db.Text
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Property {
+  id               String          @id @default(cuid())
+  title            String
+  slug             String          @unique
+  description      String          @db.Text
+  price            Float
+  priceInterval    PriceInterval? // Null for sale properties
+  type             PropertyType
+  status           PropertyStatus  @default(ACTIVE)
+  featured         Boolean         @default(false)
+  isNew            Boolean         @default(false)
+  address          String
+  city             String
+  state            String
+  zipCode          String
+  country          String          @default("United States")
+  latitude         Float?
+  longitude        Float?
+  beds             Int
+  baths            Float // Allows for half baths
+  squareFeet       Int // Interior area
+  lotSize          Int? // Land area in sq ft
+  yearBuilt        Int?
+  garage           Int? // Number of garage spaces
+  propertyType     String // e.g., Villa, Condo, etc.
+  features         Feature[]
+  amenities        Amenity[]
+  images           PropertyImage[]
+  videos           PropertyVideo[]
+  inquiries        Inquiry[]
+  views            Int             @default(0)
+  ownerId          String?
+  owner            User?           @relation("UserProperties", fields: [ownerId], references: [id])
+  agentId          String?
+  agent            Agent?          @relation(fields: [agentId], references: [id])
+  favoriteByUsers  User[]          @relation("UserFavorites")
+  nearbyProperties Property[]      @relation("NearbyProperties")
+  nearTo           Property[]      @relation("NearbyProperties")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  url        String
+  alt        String?
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  isPrimary  Boolean  @default(false)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model PropertyVideo {
+  id          String   @id @default(cuid())
+  url         String
+  title       String?
+  description String?
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Feature {
+  id         String     @id @default(cuid())
+  name       String     @unique
+  icon       String?
+  properties Property[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Amenity {
+  id         String     @id @default(cuid())
+  name       String     @unique
+  icon       String?
+  properties Property[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Inquiry {
+  id         String        @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  message    String
+  date       DateTime?
+  propertyId String
+  property   Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id])
+  status     InquiryStatus @default(NEW)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String? // e.g., "First-time Buyer", "Homeowner"
+  image     String?
+  content   String
+  rating    Int      @default(5) // 1-5 rating
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  logo      String
+  website   String?
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query     Json
+  createdAt DateTime @default(now())
+}
+
+model Location {
+  id        String       @id @default(cuid())
+  name      String
+  type      LocationType
+  city      String?
+  state     String?
+  country   String       @default("United States")
+  featured  Boolean      @default(false)
+  image     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+// Enums
+enum UserRole {
+  USER
+  AGENT
+  ADMIN
+}
+
+enum PropertyType {
+  FOR_SALE
+  FOR_RENT
+}
+
+enum PropertyStatus {
+  ACTIVE
+  PENDING
+  SOLD
+  RENTED
+  EXPIRED
+  DRAFT
+}
+
+enum PriceInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  ARCHIVED
+}
+
+enum LocationType {
+  NEIGHBORHOOD
+  DISTRICT
+  CITY
+  COUNTY
+  STATE
+}
