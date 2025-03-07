@@ -342,5 +342,3 @@ export default async function PropertyDetailPage({
   )
 }
 
-
-export default PropertyDetailPage
