@@ -26,7 +26,11 @@ import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
 
 
-export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
+const PropertyDetailPage = async ({ 
+  params
+ }: {
+  params: {id: string}
+ }) => {
   const property = await getPropertyById(Number.parseInt(params.id))
 
   if (!property) {
@@ -338,3 +342,5 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   )
 }
 
+
+export default PropertyDetailPage
