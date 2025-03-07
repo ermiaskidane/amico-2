@@ -26,11 +26,13 @@ import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
 
 
-const PropertyDetailPage = async ({ 
-  params
- }: {
-  params: {id: string}
- }) => {
+import { NextPage } from 'next'
+
+interface PropertyPageProps {
+  params: { id: string }
+}
+
+const PropertyDetailPage: NextPage<PropertyPageProps> = async ({ params }) => {
   const property = await getPropertyById(Number.parseInt(params.id))
 
   if (!property) {
