@@ -25,13 +25,18 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
 
+import { FC } from 'react';
 
-const PropertyDetailPage = async ({ 
-  params
- }: {
-  params: {id: string}
- }) => {
-  const property = await getPropertyById(Number.parseInt(params.id))
+interface PropertyPageParams {
+  id: string;
+}
+
+interface PropertyPageProps {
+  params: PropertyPageParams;
+}
+
+const PropertyDetailPage: FC<PropertyPageProps> = async ({ params }) => {
+  const property = await getPropertyById(Number.parseInt(params.id));
 
   if (!property) {
     return (
