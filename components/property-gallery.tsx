@@ -53,7 +53,7 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
       window.removeEventListener("keydown", handleKeyDown)
       document.body.style.overflow = ""
     }
-  }, [isFullscreen, images.length])
+  }, [isFullscreen, images.length, handleNext, handlePrevious])
 
 
   return (
