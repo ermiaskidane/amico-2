@@ -25,12 +25,11 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
 
-export default async function PropertyDetailPage({
-  params,
-}: {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+type PageParams = {
+  id: string
+}
+
+export default async function PropertyDetailPage({ params }: { params: PageParams }) {
   const property = await getPropertyById(Number.parseInt(params.id));
 
   if (!property) {
