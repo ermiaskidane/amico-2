@@ -26,17 +26,13 @@ import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
 
 
-type PageParams = {
-  id: string;
-}
+const PropertyDetailPage = async ({ 
+  params
+ }: {
+  params: {id: string}
+ }) => {
+  const property = await getPropertyById(Number.parseInt(params.id))
 
-export default async function PropertyDetailPage({
-  params,
-}: {
-  params: PageParams;
-}) {
-  const property = await getPropertyById(Number.parseInt(params.id));
-  
   if (!property) {
     return (
       <div className="flex min-h-screen flex-col">
