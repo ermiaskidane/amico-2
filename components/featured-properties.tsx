@@ -6,7 +6,12 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Bed, Bath, SquareIcon as SquareFeet, Heart, MapPin } from "lucide-react"
 import { properties } from "@/lib/properties"
 
-export function FeaturedProperties() {
+type FeaturedPropertiesProps = {
+  Role: string | undefined
+}
+
+export function FeaturedProperties({Role} : FeaturedPropertiesProps) {
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {properties.map((property) => (
@@ -21,6 +26,13 @@ export function FeaturedProperties() {
                 <Badge variant="outline" className="bg-yellow-500 text-primary-foreground border-none">
                   New
                 </Badge>
+              )}
+              {Role ? (
+                <Link href="/create-new-property">
+                  <Badge variant="default">update</Badge>
+                </Link>
+              ): (
+                <></>
               )}
             </div>
             <Button

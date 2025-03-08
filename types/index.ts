@@ -1,5 +1,63 @@
-import { PropertyType, PropertyStatus, PriceInterval, InquiryStatus, UserRole } from '@prisma/client'
+import {PropertyType, PriceInterval, PropertyStatus, InquiryStatus, UserRole } from '@prisma/client'
 
+// // First, define the enum to match your Prisma schema
+// enum PropertyType {
+//   FOR_SALE = "FOR_SALE",
+//   FOR_RENT = "FOR_RENT",
+//   AUCTION = "AUCTION"
+//   // Add any other values that exist in your Prisma schema
+// }
+
+// // Also define the PriceInterval enum if needed
+// enum PriceInterval {
+//   DAILY = "DAILY",
+//   WEEKLY = "WEEKLY",
+//   MONTHLY = "MONTHLY",
+//   YEARLY = "YEARLY"
+//   // Match your Prisma schema values
+// }
+
+// // Also define PropertyStatus enum
+// enum PropertyStatus {
+//   ACTIVE = "ACTIVE",
+//   PENDING = "PENDING",
+//   SOLD = "SOLD",
+//   RENTED = "RENTED",
+//   INACTIVE = "INACTIVE"
+//   // Match your Prisma schema values
+// }
+
+// Update your type to use the enum
+export type CreatePropertyData = {
+  title: string;
+  slug?: string; // This is marked as @unique in your schema
+  description: string;
+  price: number;
+  priceInterval?: PriceInterval | null; // Optional for sale properties
+  type: PropertyType; // Using the enum instead of string
+  status?: PropertyStatus; // Optional, has default in schema
+  featured?: boolean;
+  isNew?: boolean;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  beds: number;
+  baths: number;
+  squareFeet: number;
+  lotSize?: number | null;
+  yearBuilt?: number | null;
+  garage?: number | null;
+  propertyType: string;
+  features: string[]; // This should match how you handle features in your DB
+  images: string[]; // This should match how you handle images in your DB
+  createdAt: Date
+  // updatedAt: Date
+  // Add any other required fields
+}
 // Property Type Helper
 export type PropertyWithDetails = {
   id: string

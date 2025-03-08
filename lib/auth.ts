@@ -1,6 +1,19 @@
-// This is a placeholder for authentication - in a real app you'd use NextAuth.js or a similar solution
-export async function currentUser() {
-  // In a real application, you would implement actual authentication
-  // and return the authenticated user or null
-  return null
-}
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { client } from "./prisma";
+ 
+export const auth = betterAuth({
+  database: prismaAdapter(client, {
+    provider: 'postgresql'
+  }),
+  socialProviders: { 
+    google: { 
+      clientId: process.env.GOOGLE_CLIENT_ID as string, 
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
+  }, 
+//   facebook: { 
+//     clientId: process.env.FACEBOOK_CLIENT_ID as string, 
+//     clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string, 
+// }, 
+ }, 
+})

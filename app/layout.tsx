@@ -2,6 +2,8 @@ import type React from "react"
 import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { ReactQueryProvider } from "@/react-query/provider"
+import { Toaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,7 +19,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="overflow-x-hidden">
-      <body className={`${inter.className} overflow-x-hidden`}>{children}</body>
+      <body className={`${inter.className} overflow-x-hidden`}>
+        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <Toaster />
+      </body>
     </html>
   )
 }

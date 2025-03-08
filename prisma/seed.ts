@@ -24,6 +24,7 @@ async function main() {
       email: 'admin@estateease.com',
       password: await bcrypt.hash('password123', 10),
       role: UserRole.ADMIN,
+      emailVerified: true
     },
   })
 
@@ -35,6 +36,7 @@ async function main() {
       role: UserRole.AGENT,
       phone: '(555) 123-4567',
       image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200&auto=format&fit=crop',
+      emailVerified: true
     },
   })
 
@@ -57,6 +59,7 @@ async function main() {
       role: UserRole.AGENT,
       phone: '(555) 987-6543',
       image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=200&auto=format&fit=crop',
+      emailVerified: true
     },
   })
 

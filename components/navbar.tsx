@@ -15,11 +15,34 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Building2, Menu, Phone, User } from "lucide-react"
+import { Building2, LogOut, Menu, Phone, User } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { authClient } from "@/lib/auth-client"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import DropDown from "./global/drop-down"
+import { useRouter } from "next/navigation"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+
+  const router = useRouter()
+
+  const { 
+    data: session, 
+    // isPending, //loading state
+    // error, //error object
+    // refetch //refetch the session
+  } = authClient.useSession() 
+
+  const onLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/"); // redirect to login page
+        },
+      },
+    });
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -121,10 +144,33 @@ export function Navbar() {
             <Phone className="h-4 w-4 mr-2" />
             (555) 123-4567
           </Button>
-          <Button variant="outline" size="sm">
-            <User className="h-4 w-4 mr-2" />
-            Sign In
-          </Button>
+          {
+            session ? (
+              <DropDown
+              title={session.user.name}
+              trigger={
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src={session.user.image || undefined} alt="user" />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+              }
+              >
+                {/* <h2 className="text-md pl-3 pb-2"></h2> */}
+                <Button
+                  onClick={onLogout}
+                  variant="ghost"
+                  className="flex gap-x-3 px-2 justify-start w-full"
+                >
+                  <LogOut />
+                  Logout
+                </Button>
+              </DropDown>
+            ) : (
+              <Link href="/sign-in">
+                Log in
+              </Link>
+            )
+          }
           <Button size="sm">Get Started</Button>
         </div>
 
