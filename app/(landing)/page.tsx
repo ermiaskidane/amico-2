@@ -13,10 +13,17 @@ import Select from "./_components/select"
 import ContactAgent from "./_components/contact-agent"
 import Partner from "./_components/partner"
 import TestimonialsSection from "./_components/testimonal"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 
 export default async function HomePage() {
   const client = new QueryClient()
 
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  console.log("DDDDDDDDDD", session)
   await client.prefetchQuery({
     queryKey: ["user-info"],
     queryFn: () => onGetUserInfo()
@@ -25,7 +32,7 @@ export default async function HomePage() {
   return (
     <HydrationBoundary state={dehydrate(client)}>
       <div className="flex min-h-screen flex-col">
-      <Navbar />
+      <Navbar currentUser={session?.user}/>
       <main className="flex-1">
         <Hero/>
         <Feature/>

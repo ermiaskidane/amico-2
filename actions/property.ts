@@ -17,6 +17,21 @@ function generateSlug(title: string): string {
     + '-' + Date.now(); // Add timestamp to ensure uniqueness
 }
 
+export const onGetPropertyInfo = async () => {
+  try {
+    const property = await client.property.findMany({})
+    return {
+      status: 200,
+      data: property
+    }
+  } catch(error) {
+    return { 
+      status: 400, 
+      message: error instanceof Error ? error.message : "Unknown error occurred" 
+    }
+  }
+}
+
 export const onCreateProperties = async(data: CreatePropertyData) => {
   try{
     const session = await auth.api.getSession({
@@ -66,6 +81,13 @@ export const onCreateProperties = async(data: CreatePropertyData) => {
             where: { name: featureName },
             create: { name: featureName }
           }))
+        },
+
+        amenities: {
+          connectOrCreate: data.amenities.map((amenity) => ({
+            where: { name: amenity },
+            create: { name: amenity }
+          })) 
         },
         
         // Handle images

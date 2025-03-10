@@ -11,10 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent } from "@/components/ui/card"
 import { usePropertycreate } from "@/hooks/feature"
-import { availableFeatures } from "@/constants/availableFeatures"
+import { agentSpecialties, amenitiesData, availableFeatures, iconMap } from "@/constants/availableFeatures"
 import { UploadButton } from "@/lib/uploadthing"
 import { toast } from "sonner"
 import { PropertyType } from '@prisma/client';
+import { Badge } from "@/components/ui/badge"
 
 
 export default function PropertyForm() {
@@ -350,6 +351,185 @@ export default function PropertyForm() {
               )}
             />
           </div>
+
+          <Separator />
+
+          {/* Amenities */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Amenities</h2>
+            <FormField
+              control={form.control}
+              name="amenities"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Property Amenities</FormLabel>
+                    <FormDescription>Select all the amenities that apply to this property.</FormDescription>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {amenitiesData.map((amenity) => {
+                      const IconComponent = iconMap[amenity.icon as keyof typeof iconMap]
+                      return (
+                        <FormField
+                          key={amenity.name}
+                          control={form.control}
+                          name="amenities"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={amenity.name}
+                                className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(amenity.name)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, amenity.name])
+                                        : field.onChange(field.value?.filter((value) => value !== amenity.name))
+                                    }}
+                                  />
+                                </FormControl>
+                                <div className="flex items-center space-x-2">
+                                  {IconComponent && <IconComponent className="h-5 w-5 text-muted-foreground" />}
+                                  <FormLabel className="font-normal">{amenity.name}</FormLabel>
+                                </div>
+                              </FormItem>
+                            )
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+            
+          <Separator />
+
+          {/* Agent Information */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Agent Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="agent.title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter agent title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.licenseId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>License ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter license ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.yearsActive"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years Active</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Enter years of experience" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.bio"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Agent Bio</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Enter agent bio" className="min-h-[100px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.specialties"
+                render={() => (
+                  <FormItem className="md:col-span-2">
+                    <div className="mb-4">
+                      <FormLabel>Agent Specialties</FormLabel>
+                      <FormDescription>Select all specialties that apply to this agent.</FormDescription>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {form.getValues("agent.specialties")?.map((specialty, index) => (
+                          <Badge key={index} className="flex items-center gap-1 px-3 py-1">
+                            {specialty}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 rounded-full"
+                              onClick={() => {
+                                const currentSpecialties = form.getValues("agent.specialties") || []
+                                const newSpecialties = currentSpecialties.filter((s) => s !== specialty)
+                                form.setValue("agent.specialties", newSpecialties)
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              <span className="sr-only">Remove {specialty}</span>
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {agentSpecialties.map((specialty) => (
+                          <FormField
+                            key={specialty}
+                            control={form.control}
+                            name="agent.specialties"
+                            render={({ field }) => {
+                              return (
+                                <FormItem key={specialty} className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(specialty)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, specialty])
+                                          : field.onChange(field.value?.filter((value) => value !== specialty))
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">{specialty}</FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
 
           <Separator />
 

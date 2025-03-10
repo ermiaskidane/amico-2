@@ -27,12 +27,10 @@ export function FeaturedProperties({Role} : FeaturedPropertiesProps) {
                   New
                 </Badge>
               )}
-              {Role ? (
+              {(Role === "ADMIN" || Role === "AGENT") && (
                 <Link href="/create-new-property">
                   <Badge variant="default">update</Badge>
                 </Link>
-              ): (
-                <></>
               )}
             </div>
             <Button

@@ -1,4 +1,4 @@
-import {PropertyType, PriceInterval, PropertyStatus, InquiryStatus, UserRole } from '@prisma/client'
+import {PropertyType, Agent, PriceInterval, PropertyStatus, InquiryStatus, UserRole } from '@prisma/client'
 
 // // First, define the enum to match your Prisma schema
 // enum PropertyType {
@@ -53,7 +53,9 @@ export type CreatePropertyData = {
   garage?: number | null;
   propertyType: string;
   features: string[]; // This should match how you handle features in your DB
+  amenities: string[]
   images: string[]; // This should match how you handle images in your DB
+  agent: Agent;
   createdAt: Date
   // updatedAt: Date
   // Add any other required fields

@@ -24,6 +24,8 @@ import { PropertyContactForm } from "@/components/property-contact-form"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getPropertyById } from "@/lib/properties"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 
 type PageParams = {
   id: string
@@ -32,10 +34,14 @@ type PageParams = {
 export default async function PropertyDetailPage({ params }: { params: PageParams }) {
   const property = await getPropertyById(Number.parseInt(params.id));
 
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
   if (!property) {
     return (
       <div className="flex min-h-screen flex-col">
-        <Navbar />
+        <Navbar currentUser={session?.user}/>
         <main className="flex-1 container mx-auto px-4 py-12">
           <div className="text-center">
             <h1 className="text-3xl font-bold">Property Not Found</h1>
@@ -54,7 +60,7 @@ export default async function PropertyDetailPage({ params }: { params: PageParam
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
+      <Navbar currentUser={session?.user}/>
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">

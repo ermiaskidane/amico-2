@@ -35,5 +35,13 @@ export const propertySchema = z.object({
   lotSize: z.coerce.number().min(0),
   description: z.string(),
   features: z.array(z.string()),
+  amenities: z.array(z.string()),
   images: z.array(z.string()),
+  agent: z.object({
+    title: z.string(),
+    bio: z.string(),
+    specialties: z.array(z.string()),
+    licenseId: z.string(),
+    yearsActive: z.coerce.number().min(0),
+  }),
 })

@@ -17,36 +17,39 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Building2, LogOut, Menu, Phone, User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { authClient } from "@/lib/auth-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import DropDown from "./global/drop-down"
-import { useRouter } from "next/navigation"
+import { useNavbar } from "@/hooks/navbar"
+import { AgentSelectionModal } from "./global/agent-select-modal"
 
-export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
 
-  const router = useRouter()
+type NavbarProps = {
+  currentUser: {
+    id: string
+    name: string
+    email: string
+    emailVerified: boolean
+    image?: string | null | undefined,
+  } | undefined
+}
 
+export function Navbar({currentUser}: NavbarProps) {
   const { 
-    data: session, 
-    // isPending, //loading state
-    // error, //error object
-    // refetch //refetch the session
-  } = authClient.useSession() 
+    isOpen, 
+    setIsOpen, 
+    isAgentModalOpen,
+    setIsAgentModalOpen,
+    handleAgentSelect, 
+    data, 
+    UserInfo, 
+    onLogout
+  } = useNavbar()
+  
 
-  const onLogout = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/"); // redirect to login page
-        },
-      },
-    });
-  }
-
+  console.log("DDDD", currentUser, data)
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className=" flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
@@ -139,18 +142,18 @@ export function Navbar() {
           </NavigationMenu>
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex justify-between items-center gap-4 pr-2">
           <Button variant="ghost" size="sm">
             <Phone className="h-4 w-4 mr-2" />
             (555) 123-4567
           </Button>
           {
-            session ? (
+            currentUser ? (
               <DropDown
-              title={session.user.name}
+              title={currentUser.name}
               trigger={
                 <Avatar className="cursor-pointer">
-                  <AvatarImage src={session.user.image || undefined} alt="user" />
+                  <AvatarImage src={currentUser.image || undefined} alt="user" />
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
               }
@@ -171,7 +174,7 @@ export function Navbar() {
               </Link>
             )
           }
-          <Button size="sm">Get Started</Button>
+          {UserInfo?.user?.role === "ADMIN" && (<Button size="sm" onClick={() => setIsAgentModalOpen(true)}>Add Agent </Button>)}
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -230,9 +233,16 @@ export function Navbar() {
               <div className="grid gap-2">
                 <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
                   <User className="h-4 w-4 mr-2" />
-                  Sign In
+                  <Link href="/sign-in">
+                    Log in
+                  </Link>
                 </Button>
-                <Button className="w-full" onClick={() => setIsOpen(false)}>
+                <Button 
+                className="w-full" 
+                onClick={() => {
+                  setIsOpen(false)
+                  setIsAgentModalOpen(true)
+                }}>
                   Get Started
                 </Button>
               </div>
@@ -240,6 +250,11 @@ export function Navbar() {
           </SheetContent>
         </Sheet>
       </div>
+      <AgentSelectionModal
+        isOpen={isAgentModalOpen}
+        onClose={() => setIsAgentModalOpen(false)}
+        onAgentSelect={handleAgentSelect}
+      />
     </header>
   )
 }
