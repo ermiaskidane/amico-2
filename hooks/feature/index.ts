@@ -1,4 +1,4 @@
-import { onGetUserInfo } from "@/actions/auth"
+import { onGetAgentRole, onGetUserInfo } from "@/actions/auth"
 import { propertySchema } from "@/components/forms/houseForm/schema"
 import {
   useMutation,
@@ -12,6 +12,9 @@ import * as z from "zod"
 import { toast } from "sonner"
 import { onCreateProperties, onGetPropertyInfo } from "@/actions/property"
 import { CreatePropertyData } from "@/types"
+import { useEffect, useState } from "react"
+import { onGetAllAgent } from "@/actions/agent"
+import { Agent, PropertyType } from "@prisma/client"
 
 type PropertyFormValues = z.infer<typeof propertySchema>
 
@@ -32,53 +35,38 @@ export const useFeaturePage = () => {
 
 export const usePropertycreate = () => {
   const client = useQueryClient()
+  // Fetch the list of users
+  // const { data: userAgents } = useQuery({
+  //   queryKey: ["get-agent"],
+  //   queryFn: () => onGetAgentRole()
+  // });
 
-  const defaultValues: Partial<PropertyFormValues> = {
-    id: 1,
-    title: "Modern Luxury Villa",
-    address: "123 Skyline Drive, Beverly Hills",
-    city: "Beverly Hills",
-    state: "CA",
-    zipCode: "90210",
-    price: "$2,450,000",
-    beds: 5,
-    baths: 4,
-    sqft: 3200,
-    type: "For Sale",
-    isNew: true,
-    propertyType: "Villa",
-    yearBuilt: 2020,
-    garage: 2,
-    lotSize: 5400,
-    description:
-      "This stunning modern villa offers luxurious living with panoramic city views. Featuring an open floor plan, gourmet kitchen, and resort-style pool.",
-    features: [
-      "Open Floor Plan",
-      "Gourmet Kitchen",
-      "Walk-in Closets",
-      "Home Office",
-      "Smart Home System",
-      "Hardwood Floors",
-      "Fireplace",
-      "High Ceilings",
-      "Outdoor Kitchen",
-      "Swimming Pool",
-    ],
-    amenities: ["Central Heating", "Garage", "Garden"],
-    images: [
-      "https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=800&auto=format&fit=crop",
-    ],
-    agent: {
-      title: "Senior Real Estate Agent",
-      bio: "With over 10 years of experience in real estate, David specializes in luxury properties and investment opportunities.",
-      specialties: ["Luxury Homes", "Investment Properties", "Waterfront"],
-      licenseId: "CA-REB-12345",
-      yearsActive: 10,
-    },
-  }
+  const { data: Agents } = useQuery({
+    queryKey: ["get-allAgent"],
+    queryFn: () => onGetAllAgent()
+  });
+
+  console.log("MMMMMMMM", Agents)
+
+  const { data: properties } = useQuery({
+    queryKey: ["property-info"],
+    queryFn: () => onGetPropertyInfo()
+  });
+
+  // console.log("LLLLLLLLL", userAgents)
+  console.log("KKKKKKKKK", properties)
+  // State for selected agent
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [open, setOpen] = useState(false)
+
+
+  // Start with minimal default values
+const defaultValues: Partial<PropertyFormValues> = {
+  features: [],
+  amenities: [],
+  images: [],
+  isNew: false
+};
 
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertySchema),
@@ -133,5 +121,58 @@ export const usePropertycreate = () => {
     })
   })
 
-  return {oncreateProperty, form}
+  // Update selected agent when agentId changes
+  useEffect(() => {
+    console.log("useEffect triggered", {
+      agentId: form.watch("agentId"),
+      availableAgents: Agents?.allAgents
+    });
+    
+    const agentId = form.watch("agentId");
+    if (Agents?.allAgents && agentId) {
+      const agent = Agents.allAgents.find((a) => a.id === agentId);
+      if (agent) {
+        setSelectedAgent(agent);
+      }
+    } else if (Agents?.allAgents && Agents.allAgents.length > 0 && !agentId) {
+      // If no agentId is set but we have agents, select the first one
+      setSelectedAgent(Agents.allAgents[0]);
+      form.setValue("agentId", Agents.allAgents[0].id);
+    }
+  }, [Agents?.allAgents, form.watch("agentId")]);
+
+  // Then set values when data is available
+useEffect(() => {
+  if (properties?.data?.[0]) {
+    const property = properties.data[0];
+    // Reset form with new values
+    form.reset({
+      id: property.id,
+      title: property.title,
+      address: property.address,
+      city: property.city,
+      state: property.state,
+      zipCode: property.zipCode,
+      price: property.price?.toString(),
+      beds: property.beds,
+      baths: property.baths,
+      sqft: property.squareFeet,
+      type: property.type === "FOR_SALE" ? PropertyType.FOR_SALE : 
+            property.type === "FOR_RENT" ? PropertyType.FOR_RENT : 
+            undefined,
+      isNew: property.isNew,
+      propertyType: property.propertyType,
+      yearBuilt: property.yearBuilt ?? undefined,
+      garage: property.garage ?? undefined,
+      lotSize: property.lotSize ?? undefined,
+      description: property.description,
+      features: property.features ? property.features.map(feat => feat.name) : [],
+      amenities: property.amenities? property.amenities.map(amenty => amenty.name) : [],
+      images: property.images ? property.images.map(img => img.url || img.path || img.src) : [],
+      agentId: property.agentId || undefined
+    });
+  }
+}, [properties, form]);
+
+  return {oncreateProperty, form, Agents, open, setOpen, selectedAgent, setSelectedAgent}
 }

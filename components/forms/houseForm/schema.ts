@@ -8,6 +8,7 @@ const propertyTypeSchema = z.enum([
 ]);
 
 export const propertySchema = z.object({
+  id: z.string(),
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
@@ -37,11 +38,12 @@ export const propertySchema = z.object({
   features: z.array(z.string()),
   amenities: z.array(z.string()),
   images: z.array(z.string()),
-  agent: z.object({
-    title: z.string(),
-    bio: z.string(),
-    specialties: z.array(z.string()),
-    licenseId: z.string(),
-    yearsActive: z.coerce.number().min(0),
-  }),
+  agentId: z.string(),
+  // agent: z.object({
+  //   title: z.string(),
+  //   bio: z.string(),
+  //   specialties: z.array(z.string()),
+  //   licenseId: z.string(),
+  //   yearsActive: z.coerce.number().min(0),
+  // }),
 })

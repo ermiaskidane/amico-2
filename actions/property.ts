@@ -19,7 +19,14 @@ function generateSlug(title: string): string {
 
 export const onGetPropertyInfo = async () => {
   try {
-    const property = await client.property.findMany({})
+    const property = await client.property.findMany({
+      include: {
+        features: true,
+        amenities: true,
+        images: true,
+        agent: true
+      }
+    })
     return {
       status: 200,
       data: property

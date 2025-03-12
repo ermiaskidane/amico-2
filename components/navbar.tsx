@@ -174,7 +174,15 @@ export function Navbar({currentUser}: NavbarProps) {
               </Link>
             )
           }
-          {UserInfo?.user?.role === "ADMIN" && (<Button size="sm" onClick={() => setIsAgentModalOpen(true)}>Add Agent </Button>)}
+          {UserInfo?.user?.role === "ADMIN" && (
+            <Button 
+              size="sm" 
+              className="cursor-pointer" 
+              onClick={() => setIsAgentModalOpen(true)}
+            >
+              Add Agent 
+            </Button>
+          )}
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>

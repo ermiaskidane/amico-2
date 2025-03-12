@@ -1,6 +1,6 @@
 "use client"
 
-import { Trash2 } from "lucide-react"
+import { Check, Trash2, User } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -16,11 +16,16 @@ import { UploadButton } from "@/lib/uploadthing"
 import { toast } from "sonner"
 import { PropertyType } from '@prisma/client';
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 
 export default function PropertyForm() {
-  const { oncreateProperty, form} = usePropertycreate()
+  const { oncreateProperty, form, open, setOpen, selectedAgent, Agents, setSelectedAgent} = usePropertycreate()
   
+  console.log("33333", Agents, selectedAgent)
 
   return (
     <div className="container mx-auto py-10">
@@ -129,34 +134,11 @@ export default function PropertyForm() {
                       <SelectContent>
                         <SelectItem value={PropertyType.FOR_SALE}>For Sale</SelectItem>
                         <SelectItem value={PropertyType.FOR_RENT}>For Rent</SelectItem>
-                        {/* <SelectItem value={PropertyType.AUCTION}>Auction</SelectItem> */}
-                        {/* Add other property types */}
                       </SelectContent>
                     </Select>
                   </FormItem>
                 )}
               />
-              {/* <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Listing Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select listing type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="For Sale">For Sale</SelectItem>
-                        <SelectItem value="For Rent">For Rent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
             </div>
           </div>
 
@@ -412,122 +394,148 @@ export default function PropertyForm() {
           {/* Agent Information */}
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Agent Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="agent.title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Agent Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter agent title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="agent.licenseId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>License ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter license ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="agent.yearsActive"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Years Active</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Enter years of experience" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="agent.bio"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Agent Bio</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Enter agent bio" className="min-h-[100px]" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="agent.specialties"
-                render={() => (
-                  <FormItem className="md:col-span-2">
-                    <div className="mb-4">
-                      <FormLabel>Agent Specialties</FormLabel>
-                      <FormDescription>Select all specialties that apply to this agent.</FormDescription>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        {form.getValues("agent.specialties")?.map((specialty, index) => (
-                          <Badge key={index} className="flex items-center gap-1 px-3 py-1">
-                            {specialty}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-4 w-4 rounded-full"
-                              onClick={() => {
-                                const currentSpecialties = form.getValues("agent.specialties") || []
-                                const newSpecialties = currentSpecialties.filter((s) => s !== specialty)
-                                form.setValue("agent.specialties", newSpecialties)
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              <span className="sr-only">Remove {specialty}</span>
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {agentSpecialties.map((specialty) => (
-                          <FormField
-                            key={specialty}
-                            control={form.control}
-                            name="agent.specialties"
-                            render={({ field }) => {
-                              return (
-                                <FormItem key={specialty} className="flex flex-row items-start space-x-3 space-y-0">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(specialty)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, specialty])
-                                          : field.onChange(field.value?.filter((value) => value !== specialty))
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal">{specialty}</FormLabel>
-                                </FormItem>
-                              )
-                            }}
-                          />
-                        ))}
+
+            {/* Agent Selector */}
+            <FormField
+              control={form.control}
+              name="agentId"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Select Agent</FormLabel>
+                  <FormDescription>Choose the agent responsible for this property listing</FormDescription>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-full justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={selectedAgent?.user?.image || ""} alt={selectedAgent?.user?.name} />
+                              <AvatarFallback>
+                                {selectedAgent?.user?.name
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("") || "NA"}
+                              </AvatarFallback>
+                            </Avatar>
+                            {selectedAgent?.user?.name || "Select an agent"}
+                          </div>
+                          <User className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search agents..." />
+                        <CommandEmpty>No agent found.</CommandEmpty>
+                        <CommandList>
+                          <ScrollArea className="h-72">
+                            <CommandGroup>
+                              {Agents?.allAgents?.map((agent) => (
+                                <CommandItem
+                                  key={agent.id}
+                                  value={agent.id}
+                                  onSelect={() => {
+                                    form.setValue("agentId", agent.id)
+                                    setSelectedAgent(agent)
+                                    setOpen(false)
+                                  }}
+                                  className="flex items-center gap-2 py-2"
+                                >
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={agent.user.image || ""} alt={agent.user.name} />
+                                    <AvatarFallback>
+                                      {agent.user.name
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{agent.user.name}</span>
+                                    <span className="text-xs text-muted-foreground">{agent.title}</span>
+                                  </div>
+                                  <Check
+                                    className={`ml-auto h-4 w-4 ${
+                                      agent.id === field.value ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </ScrollArea>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Selected Agent Details */}
+            {selectedAgent && (
+              <Card className="overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex flex-col items-center space-y-4">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={selectedAgent.user.image || ""} alt={selectedAgent.user.name} />
+                        <AvatarFallback>
+                          {selectedAgent.user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-center">
+                        <p className="text-sm font-medium">Contact</p>
+                        <p className="text-sm">{selectedAgent.user.email}</p>
+                        <p className="text-sm">{selectedAgent.user.phone}</p>
                       </div>
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">{selectedAgent.user.name}</h3>
+                        <p className="text-sm text-muted-foreground">{selectedAgent.title}</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium">License ID</p>
+                          <p className="text-sm">{selectedAgent.licenseId || "N/A"}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Years Active</p>
+                          <p className="text-sm">{selectedAgent.yearsActive}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium">Bio</p>
+                        <p className="text-sm">{selectedAgent.bio || "No bio available"}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium">Specialties</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedAgent.specialties.map((specialty, index) => (
+                            <Badge key={index} variant="secondary" className="px-2 py-1">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
 
@@ -683,3 +691,149 @@ export default function PropertyForm() {
   )
 }
 
+
+
+
+{/* <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Agent Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent Name</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Agent" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {userAgents?.data?.map((agent) =>(
+                          <SelectItem value={agent.name}>{agent.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter agent title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.licenseId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>License ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter license ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.yearsActive"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years Active</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Enter years of experience" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.bio"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Agent Bio</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Enter agent bio" className="min-h-[100px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="agent.specialties"
+                render={() => (
+                  <FormItem className="md:col-span-2">
+                    <div className="mb-4">
+                      <FormLabel>Agent Specialties</FormLabel>
+                      <FormDescription>Select all specialties that apply to this agent.</FormDescription>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {form.getValues("agent.specialties")?.map((specialty, index) => (
+                          <Badge key={index} className="flex items-center gap-1 px-3 py-1">
+                            {specialty}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 rounded-full"
+                              onClick={() => {
+                                const currentSpecialties = form.getValues("agent.specialties") || []
+                                const newSpecialties = currentSpecialties.filter((s) => s !== specialty)
+                                form.setValue("agent.specialties", newSpecialties)
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              <span className="sr-only">Remove {specialty}</span>
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {agentSpecialties.map((specialty) => (
+                          <FormField
+                            key={specialty}
+                            control={form.control}
+                            name="agent.specialties"
+                            render={({ field }) => {
+                              return (
+                                <FormItem key={specialty} className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(specialty)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, specialty])
+                                          : field.onChange(field.value?.filter((value) => value !== specialty))
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">{specialty}</FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div> */}
